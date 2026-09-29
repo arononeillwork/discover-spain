@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Car, FileText, HeartPulse, Home as HomeIcon, Wrench } from "lucide-react";
-import { guides } from "@/data/guides";
 import { PathTimeline } from "@/components/PathTimeline";
+import { getPathGuides } from "@/lib/queries";
 
 const sections = [
   { href: "/guides", icon: FileText, title: "Paperwork walkthroughs", text: "NIE, padrón, Social Security, digital certificate, taxes." },
@@ -11,10 +11,10 @@ const sections = [
   { href: "/trades", icon: Wrench, title: "Trusted tradespeople", text: "Electricians, plumbers, painters, cleaners and more." },
 ];
 
-const path = ["nie", "padron", "bank-account", "social-security", "health-card", "digital-certificate", "driving-licence"];
-
-export default function Home() {
-  const pathGuides = path.map((slug) => guides.find((g) => g.slug === slug)!);
+export default async function Home() {
+  // Order comes from guides.path_position in the database.
+  const pathGuides = await getPathGuides();
+  const first = pathGuides[0];
 
   return (
     <>
@@ -27,8 +27,11 @@ export default function Home() {
           Clear walkthroughs, official links and trusted local contacts for everything from your NIE to finding a plumber.
         </p>
         <div className="relative mt-8 flex flex-wrap gap-3">
-          <Link href="/guides/nie" className="rounded-full bg-white px-6 py-3 font-semibold text-accent shadow-sm transition hover:shadow-md">
-            Start with your NIE
+          <Link
+            href={first ? `/guides/${first.slug}` : "/guides"}
+            className="rounded-full bg-white px-6 py-3 font-semibold text-accent shadow-sm transition hover:shadow-md"
+          >
+            {first ? `Start with ${first.title}` : "Browse the guides"}
           </Link>
           <Link href="#path" className="rounded-full border border-white/50 px-6 py-3 font-semibold text-white transition hover:bg-white/10">
             See the full path
@@ -53,10 +56,11 @@ export default function Home() {
           <p className="text-sm font-semibold uppercase tracking-wider text-accent">Your path</p>
           <h2 className="mt-2 text-3xl font-bold tracking-tight">Moving here? Do it in this order.</h2>
           <p className="mt-3 text-muted">
-            Each step unlocks the next. Tick off steps inside each guide and your progress shows here. It is saved in this browser.
+            Each step unlocks the next. Tick off steps inside each guide and your progress shows here. It is saved in this browser, or
+            to your account if you sign in.
           </p>
         </div>
-        <PathTimeline guides={pathGuides.map(({ slug, title, summary, steps }) => ({ slug, title, summary, steps }))} />
+        <PathTimeline guides={pathGuides} />
       </section>
     </>
   );

@@ -1,10 +1,12 @@
-// Shapes mirror the future Supabase tables, so data files can be swapped for DB queries later.
+// UI shapes. src/lib/queries.ts maps database rows (src/lib/database.types.ts) into these.
 
 export type Link = { label: string; url: string; note?: string };
 
-export type Step = { title: string; detail: string; link?: Link };
+/** A checklist step. `id` is the guide_steps primary key, used to track progress. */
+export type Step = { id: number; title: string; detail: string; link?: Link };
 
-export type GuideCategory = "Paperwork" | "Money" | "Health" | "Driving" | "Home";
+export const GUIDE_CATEGORIES = ["Paperwork", "Money", "Health", "Driving", "Home"] as const;
+export type GuideCategory = (typeof GUIDE_CATEGORIES)[number];
 
 export type Guide = {
   slug: string;
@@ -13,14 +15,59 @@ export type Guide = {
   category: GuideCategory;
   timeEstimate: string;
   cost: string;
-  updated: string; // ISO date the info was last reviewed
+  reviewedOn: string; // ISO date (YYYY-MM-DD) the info was last reviewed
   documents: string[];
   steps: Step[];
-  tips?: string[];
+  tips: string[];
   links: Link[];
 };
 
-export type TradeCategory = "Electrician" | "Handyman" | "Plumber" | "Painter / Plasterer" | "Cleaner";
+export type GuideSummary = Pick<Guide, "slug" | "title" | "summary" | "category" | "timeEstimate" | "cost">;
+
+/** A guide on the home page "Your path", with its step ids in order. */
+export type PathGuide = Pick<Guide, "slug" | "title" | "summary"> & { stepIds: number[] };
+
+export type RideOption = {
+  id: number;
+  name: string;
+  kind: "Licensed taxi" | "VTC (private hire)";
+  pricing: string;
+  airport: string;
+  booking: string;
+  bestFor: string;
+  pros: string[];
+  cons: string[];
+  url: string;
+  highlighted: boolean;
+};
+
+export type AirportOption = { id: number; name: string; detail: string; url?: string };
+
+/** Indicative buyer cost. Percentages apply to the purchase price; `fixed` is a € range. */
+export type PurchaseFee = {
+  id: number;
+  name: string;
+  resalePct: number | null;
+  newBuildPct: number | null;
+  fixed: [number, number] | null;
+  plusVat: boolean; // 21% IVA charged on top
+  note: string;
+};
+
+export type MortgageFact = { id: number; label: string; value: string };
+
+export type RateType = { id: number; name: string; detail: string };
+
+export type HealthSection = {
+  id: string;
+  title: string;
+  intro: string;
+  points: { id: number; title: string; detail: string }[];
+  links: Link[];
+};
+
+/** Trade names come from the trade_categories table (e.g. "Electrician"). */
+export type TradeCategory = string;
 
 export type Tradesperson = {
   id: string;
@@ -32,5 +79,8 @@ export type Tradesperson = {
   languages: string[];
   notes: string;
   verified: boolean;
-  placeholder?: boolean;
+  placeholder: boolean;
 };
+
+/** The signed-in visitor, as far as the UI needs to know. */
+export type SessionUser = { id: string; email: string | null };

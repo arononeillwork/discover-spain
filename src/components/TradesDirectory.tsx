@@ -11,10 +11,11 @@ export function TradesDirectory({ trades, categories }: { trades: Tradesperson[]
   return (
     <>
       <div className="mb-6 flex flex-wrap gap-2">
-        {(["All", ...categories] as const).map((c) => (
+        {["All", ...categories].map((c) => (
           <button
             key={c}
             onClick={() => setFilter(c)}
+            aria-pressed={filter === c}
             className={`rounded-full px-4 py-2 text-sm font-medium transition ${
               filter === c ? "bg-accent text-white" : "border border-line bg-surface hover:border-accent"
             }`}
@@ -24,9 +25,18 @@ export function TradesDirectory({ trades, categories }: { trades: Tradesperson[]
         ))}
       </div>
 
+      {shown.length === 0 && (
+        <p className="card text-muted">
+          No {filter === "All" ? "tradespeople" : filter.toLowerCase()} listed yet.{" "}
+          <a href="#recommend" className="link">
+            Recommend one
+          </a>
+        </p>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {shown.map((t) => (
-          <div key={t.id} className={`card flex flex-col ${t.placeholder ? "border-dashed" : ""}`}>
+          <div key={t.id} className={`card flex flex-col ${t.placeholder ? "border-dashed" : ""}`} data-testid="tradesperson">
             <div className="flex items-start justify-between gap-2">
               <span className="chip">{t.trade}</span>
               {t.placeholder ? (
@@ -44,7 +54,7 @@ export function TradesDirectory({ trades, categories }: { trades: Tradesperson[]
               <span className="text-muted">Speaks:</span> {t.languages.join(", ")}
             </p>
             <div className="mt-auto flex gap-2 pt-5">
-              <a href={`tel:${t.phone.replace(/\s/g, "")}`} className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-line py-2.5 text-sm font-medium hover:border-accent">
+              <a href={`tel:${t.phone.replace(/[^\d+]/g, "")}`} className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-line py-2.5 text-sm font-medium hover:border-accent">
                 <Phone size={16} /> Call
               </a>
               {t.whatsapp && (

@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  app:
+    name: Lint, typecheck, build
+    runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+      # The build never contacts Supabase (every page renders at request time), but NEXT_PUBLIC_*
+      # values are inlined into the bundle, so give it harmless placeholders.
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+
+  db:
+    name: Database tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      # Installs the Supabase CLI pinned in package-lock.json (a devDependency).
+      - run: npm ci
+      - name: Start Postgres (applies supabase/migrations and seed.sql)
+        run: npx supabase db start
+      - name: Lint schema
+        run: npx supabase db lint --level warning --fail-on error
+      - name: Run pgTAP tests (supabase/tests)
+        run: npm run db:test

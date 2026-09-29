@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Clock, Euro } from "lucide-react";
-import { guides } from "@/data/guides";
 import { PageHeader } from "@/components/LinkList";
+import { getGuideSummaries } from "@/lib/queries";
 
 export const metadata: Metadata = { title: "Guides" };
 
-export default function GuidesPage() {
+export default async function GuidesPage() {
+  const guides = await getGuideSummaries();
+
   return (
     <>
       <PageHeader
@@ -21,11 +23,11 @@ export default function GuidesPage() {
             <h2 className="mt-3 text-xl font-semibold">{g.title}</h2>
             <p className="mt-1 text-muted">{g.summary}</p>
             <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted">
-              <span className="inline-flex items-center gap-1">
-                <Clock size={14} /> {g.timeEstimate}
+              <span className="inline-flex items-start gap-1">
+                <Clock size={14} className="mt-[3px] shrink-0" /> {g.timeEstimate}
               </span>
-              <span className="inline-flex items-center gap-1">
-                <Euro size={14} /> {g.cost}
+              <span className="inline-flex items-start gap-1">
+                <Euro size={14} className="mt-[3px] shrink-0" /> {g.cost}
               </span>
             </div>
           </Link>

@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { healthSections } from "@/data/healthcare";
 import { LinkList, PageHeader } from "@/components/LinkList";
+import { getGuideSummaries, getHealthSections } from "@/lib/queries";
 
 export const metadata: Metadata = { title: "Healthcare" };
 
-export default function HealthcarePage() {
+/** The "public" section links to this guide's step-by-step walkthrough. */
+const HEALTH_CARD_GUIDE = "health-card";
+
+export default async function HealthcarePage() {
+  const [healthSections, guides] = await Promise.all([getHealthSections(), getGuideSummaries()]);
+  // Only link the walkthrough while that guide is published (unpublished guides aren't returned).
+  const healthCardGuide = guides.find((g) => g.slug === HEALTH_CARD_GUIDE);
+
   return (
     <>
       <PageHeader
@@ -29,7 +36,7 @@ export default function HealthcarePage() {
             <p className="mt-1 text-muted">{s.intro}</p>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               {s.points.map((p) => (
-                <div key={p.title} className="card">
+                <div key={p.id} className="card">
                   <h3 className="font-semibold">{p.title}</h3>
                   <p className="mt-1 text-sm text-muted">{p.detail}</p>
                 </div>
@@ -38,8 +45,8 @@ export default function HealthcarePage() {
             <div className="mt-4 text-sm">
               <LinkList links={s.links} />
             </div>
-            {s.id === "public" && (
-              <Link href="/guides/health-card" className="link mt-3 inline-block text-sm">
+            {s.id === "public" && healthCardGuide && (
+              <Link href={`/guides/${healthCardGuide.slug}`} className="link mt-3 inline-block text-sm">
                 Step-by-step: get your health card →
               </Link>
             )}

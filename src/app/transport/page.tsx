@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { Check, ExternalLink, Minus, Plane } from "lucide-react";
-import { airportOptions, rideOptions } from "@/data/transport";
 import { PageHeader } from "@/components/LinkList";
+import { getTransport } from "@/lib/queries";
 
 export const metadata: Metadata = { title: "Taxis & transport" };
 
-export default function TransportPage() {
+export default async function TransportPage() {
+  const { rides: rideOptions, airport: airportOptions } = await getTransport();
+
   return (
     <>
       <PageHeader
@@ -16,13 +18,13 @@ export default function TransportPage() {
 
       <div className="grid gap-4 md:grid-cols-2">
         {rideOptions.map((o) => (
-          <div key={o.name} className={`card ${o.name === "PideTaxi" ? "ring-2 ring-accent" : ""}`}>
+          <div key={o.id} className={`card ${o.highlighted ? "ring-2 ring-accent" : ""}`}>
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-xl font-semibold">{o.name}</h2>
-                <span className="chip mt-2">{o.type}</span>
+                <span className="chip mt-2">{o.kind}</span>
               </div>
-              {o.name === "PideTaxi" && <span className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-white">Local pick</span>}
+              {o.highlighted && <span className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-white">Local pick</span>}
             </div>
 
             <dl className="mt-5 space-y-3 text-sm">
@@ -69,7 +71,7 @@ export default function TransportPage() {
         </h2>
         <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {airportOptions.map((a) => (
-            <div key={a.name} className="card">
+            <div key={a.id} className="card">
               <h3 className="font-semibold">{a.name}</h3>
               <p className="mt-1 text-sm text-muted">{a.detail}</p>
               {a.url && (

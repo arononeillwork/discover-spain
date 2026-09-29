@@ -2,19 +2,20 @@
 
 import Link from "next/link";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
-import type { Guide } from "@/lib/types";
-import { useProgress } from "@/lib/progress";
+import type { PathGuide } from "@/lib/types";
+import { useProgress } from "@/components/ProgressProvider";
 
-export function PathTimeline({ guides }: { guides: Pick<Guide, "slug" | "title" | "summary" | "steps">[] }) {
-  const progress = useProgress();
+export function PathTimeline({ guides }: { guides: PathGuide[] }) {
+  const { done: completed } = useProgress();
 
   return (
     <ol className="relative space-y-4 border-l-2 border-dashed border-line pl-8">
       {guides.map((g, i) => {
-        const done = progress[g.slug]?.length ?? 0;
-        const complete = done === g.steps.length;
+        const done = g.stepIds.filter((id) => completed.has(id)).length;
+        const total = g.stepIds.length;
+        const complete = total > 0 && done === total;
         return (
-          <li key={g.slug} className="relative">
+          <li key={g.slug} className="relative" data-testid={`path-${g.slug}`}>
             <span
               className={`absolute -left-[45px] grid h-8 w-8 place-items-center rounded-full text-sm font-semibold ${
                 complete ? "bg-accent text-white" : "border-2 border-line bg-bg text-muted"
@@ -28,7 +29,7 @@ export function PathTimeline({ guides }: { guides: Pick<Guide, "slug" | "title" 
                 <p className="mt-1 text-sm text-muted">{g.summary}</p>
                 {done > 0 && (
                   <p className="mt-2 text-xs font-medium text-accent">
-                    {done}/{g.steps.length} steps done
+                    {done}/{total} steps done
                   </p>
                 )}
               </div>

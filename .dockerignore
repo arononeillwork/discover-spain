@@ -1,0 +1,28 @@
+# Keep the build context small and free of local state and secrets.
+
+# Dependencies and build output are recreated inside the image.
+node_modules
+.next
+out
+build
+*.tsbuildinfo
+next-env.d.ts
+
+# Env files: the image gets its settings from build args / runtime env, never from these.
+.env*
+
+# Not needed to build the web app.
+.git
+.github
+supabase
+scripts
+Dockerfile
+.dockerignore
+docker-compose*.yml
+compose*.yml
+*.md
+npm-debug.log*
+.DS_Store
+.vscode
+.idea
+coverage

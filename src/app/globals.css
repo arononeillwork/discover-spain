@@ -2,6 +2,7 @@
 
 /* Mediterranean palette: sand, terracotta, deep navy. Tweak here to restyle the whole site. */
 :root {
+  color-scheme: light; /* native controls (number spinners, selects, scrollbars) follow the theme */
   --bg: #faf7f2;
   --surface: #ffffff;
   --ink: #1b2a41;
@@ -15,6 +16,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    color-scheme: dark;
     --bg: #0f1722;
     --surface: #172231;
     --ink: #eef2f7;
@@ -55,4 +57,17 @@ body {
 
 .link {
   @apply font-medium text-accent underline-offset-4 hover:underline;
+}
+
+/* Form controls (login, recommend a tradesperson). */
+.input {
+  @apply mt-1 w-full rounded-xl border border-line bg-bg px-3 py-2.5 outline-none transition-colors placeholder:text-muted/70 focus:border-accent;
+}
+
+.input[aria-invalid="true"] {
+  @apply border-red-500;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 font-semibold text-white shadow-sm transition hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60;
 }

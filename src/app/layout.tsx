@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { SiteHeader } from "@/components/SiteHeader";
+import { ProgressProvider } from "@/components/ProgressProvider";
+import { getSessionState } from "@/lib/session";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
@@ -11,12 +13,17 @@ export const metadata: Metadata = {
     "Walkthroughs for NIE, padrón, healthcare, mortgages, taxis and trusted tradespeople on the Costa del Sol.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Signed-in user (if any) and their saved progress. Never throws; signed out when unsure.
+  const { user, doneStepIds } = await getSessionState();
+
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans">
-        <SiteHeader />
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6">{children}</main>
+        <ProgressProvider user={user} initialDone={doneStepIds}>
+          <SiteHeader user={user} />
+          <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6">{children}</main>
+        </ProgressProvider>
         <footer className="border-t border-line">
           <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-muted sm:px-6">
             <p>

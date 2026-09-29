@@ -1,0 +1,30 @@
+# Runs the Discover Spain web app in Docker, talking to the local Supabase stack on your machine.
+#
+# Supabase is NOT defined here. The Supabase CLI runs it in its own containers (supabase_*), so:
+#   1. npm run db:start      # Supabase CLI: Postgres, Auth, REST, Studio, Mailpit…
+#   2. npm run docker:up     # this file: builds the app image and serves it on http://localhost:3000
+#
+# `npm run docker:up` reads .env.example and then .env.local (if present) for the ${…} values
+# below; plain `docker compose up --build` uses your shell environment and the defaults here.
+# Use another host port with WEB_PORT, e.g. `WEB_PORT=3300 npm run docker:up`.
+name: discover-spain
+
+services:
+  web:
+    build:
+      context: .
+      args:
+        # Inlined into the browser JavaScript at build time, so this must be the URL your browser
+        # uses to reach Supabase. The defaults are the local Supabase CLI stack's.
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-http://127.0.0.1:54321}
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:-sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH}
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    environment:
+      # Server-side requests: 127.0.0.1 inside the container is the container itself, so reach the
+      # Supabase CLI stack through the host. (Pointing the app at a hosted project instead? Remove
+      # this line so the server uses NEXT_PUBLIC_SUPABASE_URL too.)
+      SUPABASE_URL: http://host.docker.internal:54321
+    extra_hosts:
+      # Docker Desktop provides host.docker.internal already; this makes it work on Linux too.
+      - "host.docker.internal:host-gateway"
